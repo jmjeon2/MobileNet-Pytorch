@@ -1,2 +1,1 @@
-# MobileNet-Pytorch
-Implementation of MobileNet V1, V2, V3
+# Implemenetation of MobileNet V1, V2, V3
