@@ -1,5 +1,4 @@
 import torch.nn as nn
-
 from torchsummary import summary
 
 def dwise_conv(ch_in, stride=1):
@@ -17,7 +16,7 @@ def conv1x1(ch_in, ch_out):
         nn.Sequential(
             nn.Conv2d(ch_in, ch_out, kernel_size=1, padding=0, stride=1, bias=False),
             nn.BatchNorm2d(ch_out),
-            # nn.ReLU6(inplace=True)
+            nn.ReLU6(inplace=True)
         )
     )
 
@@ -31,7 +30,6 @@ def conv3x3(ch_in, ch_out, stride):
     )
 
 class InvertedBlock(nn.Module):
-
     def __init__(self, ch_in, ch_out, expand_ratio, stride):
         super(InvertedBlock, self).__init__()
 
@@ -55,18 +53,17 @@ class InvertedBlock(nn.Module):
         self.layers = nn.Sequential(*layers)
 
     def forward(self, x):
-
         if self.use_res_connect:
             return x + self.layers(x)
         else:
             return self.layers(x)
 
 class MobileNetV2(nn.Module):
-    def __init__(self, num_classes=10):
+    def __init__(self, ch_in=3, n_classes=1000):
         super(MobileNetV2, self).__init__()
 
         self.configs=[
-            # t, c, n s
+            # t, c, n, s
             [1, 16, 1, 1],
             [6, 24, 2, 2],
             [6, 32, 3, 2],
@@ -76,7 +73,7 @@ class MobileNetV2(nn.Module):
             [6, 320, 1, 1]
         ]
 
-        self.stem_conv = conv3x3(3, 32, stride=2)
+        self.stem_conv = conv3x3(ch_in, 32, stride=2)
 
         layers = []
         input_channel = 32
@@ -92,10 +89,9 @@ class MobileNetV2(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Dropout2d(0.2),
-            nn.Linear(1280, num_classes)
+            nn.Linear(1280, n_classes)
         )
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-
 
     def forward(self, x):
         x = self.stem_conv(x)
@@ -107,6 +103,6 @@ class MobileNetV2(nn.Module):
 
 
 if __name__=="__main__":
-
-    model = MobileNetV2(num_classes=256)
+    # model check
+    model = MobileNetV2(ch_in=3, n_classes=1000)
     summary(model, (3, 224, 224), device='cpu')
